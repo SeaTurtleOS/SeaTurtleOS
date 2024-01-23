@@ -49,7 +49,7 @@ void terminal_init(void) {
     terminal_row = 0;
     terminal_column = 0;
     // Initialize the current row and column to be at the beginning of the terminal
-    terminal_color = vga_entry_color(VGA_BLUE, VGA_BLACK);  // Blue foreground, black background
+    terminal_color = vga_entry_color(VGA_LIGHT_RED, VGA_BLACK);  // Blue foreground, black background
     terminal_buffer = (uint16_t*) 0xB8000;  // Spooky magic number!?
     for (size_t y=0;y<VGA_HEIGHT;y++) {  // Goes over every line (row)
         for (size_t x=0;x<VGA_WIDTH;x++) { // Goes over every column
@@ -81,4 +81,21 @@ void terminal_put_char(char c) {
             terminal_row = 0; // Wraps to beginning of terminal
         }
     }
+}
+
+void terminal_write(const char* data, size_t size) {
+    // The size parameter just holds the length of data
+    for (size_t i = 0; i < size; i++) {
+        terminal_put_char(data[i]); // Display the ith character
+    }
+}
+
+void terminal_write_string(const char* data) {
+    // Use the strlen function we umpletemented above to get data's length
+    terminal_write(data, strlen(data));
+}
+
+void kernel_main(void) {
+    terminal_init();
+    terminal_write_string("Hello, Sea turtles!");
 }
