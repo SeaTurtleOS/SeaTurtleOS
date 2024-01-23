@@ -74,11 +74,6 @@ void terminal_put_entry_at(char c, uint8_t color, size_t x, size_t y) {
 }
 
 void terminal_put_char(char c) {
-    if (c == '\n') {
-        terminal_row++;
-        terminal_column = 0;
-        return;
-    }
     terminal_put_entry_at(c, terminal_color, terminal_column, terminal_row);
     if (++terminal_column == VGA_WIDTH) { // Goes to next column, even if condition is not met
         terminal_column = 0; // Wraps to beginning of line
@@ -102,6 +97,5 @@ void terminal_write_string(const char* data) {
 
 void kernel_main(void) {
     terminal_init();
-    terminal_write_string("Hello, Sea turtles!\n");
-    terminal_write_string("Hello to you too, tortoises!");
+    terminal_write_string("Hello, Sea turtles!");
 }
