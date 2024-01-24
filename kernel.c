@@ -73,17 +73,34 @@ void terminal_put_entry_at(char c, uint8_t color, size_t x, size_t y) {
     terminal_buffer[index] = vga_entry(c, color);
 }
 
+void terminal_shift_character(size_t i, size_t j) {
+    terminal_buffer[(i-1) * VGA_WIDTH + j] = terminal_buffer[i * VGA_WIDTH + j]; // Moving over the information, one character at a time.
+}
+
+void terminal_shift_text(void) {
+    // Moves the contents of the terminal_buffer 1 line upwards
+    for (size_t i = 1; i < VGA_HEIGHT; i++) { // Starting i at 1 so the topmost line gets deleted
+        for (size_t j = 0; j < VGA_WIDTH; j++) {
+            terminal_shift_character(i, j); // Shift every character upwards.
+        }
+    }
+    if (terminal_row != VGA_HEIGHT) {
+        terminal_row--; // Go to the previous line if we're not at the end of the buffer.
+    }
+}
+
 void terminal_put_char(char c) {
     if (c == '\n') {
-        terminal_row++;
+        terminal_row = (terminal_row == VGA_HEIGHT) ? VGA_HEIGHT : terminal_row + 1;
         terminal_column = 0;
         return;
     }
     terminal_put_entry_at(c, terminal_color, terminal_column, terminal_row);
     if (++terminal_column == VGA_WIDTH) { // Goes to next column, even if condition is not met
         terminal_column = 0; // Wraps to beginning of line
-        if (++terminal_row == VGA_HEIGHT) { // Goes to next line, even if condition is not met
-            terminal_row = 0; // Wraps to beginning of terminal
+        if (++terminal_row >= VGA_HEIGHT) { // Goes to next line, even if condition is not met
+            terminal_row = VGA_HEIGHT;
+            terminal_shift_text();
         }
     }
 }
@@ -102,6 +119,9 @@ void terminal_write_string(const char* data) {
 
 void kernel_main(void) {
     terminal_init();
-    terminal_write_string("Hello, Sea turtles!\n");
-    terminal_write_string("Hello to you too, tortoises!");
+    terminal_write_string("This text will be gone before the user can see it haha\n");
+    terminal_write_string("The previous text has been snapped out of existence.\n");
+    terminal_shift_text();
+    terminal_write_string("Lorem ipsum dolor, I don't like this color. But who cares, it's not breaking anything. Why change it?");
+    terminal_write_string("This line seems oddly long. Wonder if there's a reason behind that.");
 }
