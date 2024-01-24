@@ -1,3 +1,5 @@
 .vscode
 .testing
 *.o
+*.bin
+*.iso
