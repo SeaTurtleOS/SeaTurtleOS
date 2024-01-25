@@ -87,9 +87,6 @@ void terminal_shift_text(void) {
     if (terminal_row != VGA_HEIGHT-1) { // VGA_HEIGHT-1 is the final line
         terminal_row--; // Go to the previous line if we're not at the end of the buffer.
     }
-    // for (size_t i = 0; i < VGA_WIDTH; i++) {
-    //     terminal_buffer[(VGA_HEIGHT-1)*VGA_WIDTH+i] = vga_entry(' ', terminal_color);
-    // }
 }
 
 void terminal_put_char(char c) {
