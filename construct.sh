@@ -18,7 +18,7 @@ echo -e "${GREEN}Success${RESET}"
 
 echo -e -n "${BLUE}Copying binary into isodir .... "
 cp seaturtleos.bin isodir/boot/seaturtleos.bin
-echo -e "${GREEN}SUCCESS${RESET}"
+echo -e "${GREEN}Success${RESET}"
 
 echo -e -n "${BLUE}Creating iso images ........... "
 grub-mkrescue -o seaturtleos.iso isodir >/dev/null

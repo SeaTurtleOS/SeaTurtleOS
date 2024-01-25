@@ -51,8 +51,8 @@ void terminal_init(void) {
     // Initialize the current row and column to be at the beginning of the terminal
     terminal_color = vga_entry_color(VGA_LIGHT_RED, VGA_BLACK);  // Blue foreground, black background
     terminal_buffer = (uint16_t*) 0xB8000;  // Spooky magic number!?
-    for (size_t y=0;y<VGA_HEIGHT;y++) {  // Goes over every line (row)
-        for (size_t x=0;x<VGA_WIDTH;x++) { // Goes over every column
+    for (size_t y = 0; y < VGA_HEIGHT; y++) {  // Goes over every line (row)
+        for (size_t x = 0;x < VGA_WIDTH; x++) { // Goes over every column
             const size_t index = y * VGA_WIDTH + x;  // Position = y*width+x, covers 'y' number of lines and adds offset of x
             terminal_buffer[index] = vga_entry(' ', terminal_color);  // Initialize with blank characters (spaces) in every position
         }
@@ -79,35 +79,46 @@ void terminal_shift_character(size_t i, size_t j) {
 
 void terminal_shift_text(void) {
     // Moves the contents of the terminal_buffer 1 line upwards
-    for (size_t i = 1; i < VGA_HEIGHT; i++) { // Starting i at 1 so the topmost line gets deleted
+    for (size_t i = 1; i <= VGA_HEIGHT; i++) { // Starting i at 1 so the topmost line gets deleted
         for (size_t j = 0; j < VGA_WIDTH; j++) {
             terminal_shift_character(i, j); // Shift every character upwards.
         }
     }
-    if (terminal_row != VGA_HEIGHT) {
+    if (terminal_row != VGA_HEIGHT-1) { // VGA_HEIGHT-1 is the final line
         terminal_row--; // Go to the previous line if we're not at the end of the buffer.
     }
+    // for (size_t i = 0; i < VGA_WIDTH; i++) {
+    //     terminal_buffer[(VGA_HEIGHT-1)*VGA_WIDTH+i] = vga_entry(' ', terminal_color);
+    // }
 }
 
 void terminal_put_char(char c) {
     if (c == '\n') {
-        terminal_row = (terminal_row == VGA_HEIGHT) ? VGA_HEIGHT : terminal_row + 1;
         terminal_column = 0;
-        return;
-    }
-    terminal_put_entry_at(c, terminal_color, terminal_column, terminal_row);
-    if (++terminal_column == VGA_WIDTH) { // Goes to next column, even if condition is not met
-        terminal_column = 0; // Wraps to beginning of line
-        if (++terminal_row >= VGA_HEIGHT) { // Goes to next line, even if condition is not met
-            terminal_row = VGA_HEIGHT;
-            terminal_shift_text();
+        if (terminal_row == VGA_HEIGHT-1) {
+            terminal_shift_text();  // Don't go to the next terminal row, because there is none. VGA_HEIGHT-1 is the last row.
+        } else {
+            terminal_row++;
         }
+    } else {
+        if (terminal_column == VGA_WIDTH-1) {
+            terminal_column = 0; 
+            // Overflow onto the next column  vvvv
+            if (terminal_row == VGA_HEIGHT-1) {
+                terminal_shift_text(); // Shift text in order to start the overflow
+            } else {
+                terminal_row++; // Just go to the next line
+            }
+        }
+        terminal_put_entry_at(c, terminal_color, terminal_column, terminal_row);
+        terminal_column++; // Next character position
     }
 }
 
 void terminal_write(const char* data, size_t size) {
     // The size parameter just holds the length of data
     for (size_t i = 0; i < size; i++) {
+        if (data[i] == '\0') {return;}
         terminal_put_char(data[i]); // Display the ith character
     }
 }
@@ -117,11 +128,17 @@ void terminal_write_string(const char* data) {
     terminal_write(data, strlen(data));
 }
 
+void terminal_print(const char* data) {
+    terminal_write_string(data);  // Print the text, then the newline
+    terminal_write_string("\n");
+}
+
 void kernel_main(void) {
     terminal_init();
-    terminal_write_string("This text will be gone before the user can see it haha\n");
-    terminal_write_string("The previous text has been snapped out of existence.\n");
-    terminal_shift_text();
-    terminal_write_string("Lorem ipsum dolor, I don't like this color. But who cares, it's not breaking anything. Why change it?");
-    terminal_write_string("This line seems oddly long. Wonder if there's a reason behind that.");
+    char *string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    char *p = string;
+    for (char c = *p; c != '\0'; c = *++p) {
+        terminal_print(&c); // Get the address of the character to pass into our function.
+    }
+    terminal_write_string("Turtles are the pinnacle of greatness.");
 }
