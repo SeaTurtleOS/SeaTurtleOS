@@ -1,31 +1,39 @@
-MBALIGN  equ 1 << 0
-MEMINFO  equ 1 << 1
-MBFLAGS   equ MBALIGN | MEMINFO
-MAGIC    equ 0x1BADB002
-CHECKSUM equ - (MAGIC + MBFLAGS)
+# Declare constants for the multiboot header.
+.set ALIGN,    1<<0             # align loaded modules on page boundaries
+.set MEMINFO,  1<<1             # provide memory map
+.set FLAGS,    ALIGN | MEMINFO  # this is the Multiboot 'flag' field
+.set MAGIC,    0x1BADB002       # 'magic number' lets bootloader find the header
+.set CHECKSUM, -(MAGIC + FLAGS) # checksum of above, to prove we are multiboot
 
-section .multiboot
-align 4
-    dd MAGIC
-    dd MBFLAGS
-    dd CHECKSUM
+# Declare a header as in the Multiboot Standard.
+.section .multiboot
+.align 4
+.long MAGIC
+.long FLAGS
+.long CHECKSUM
 
-section .bss
-align 16
+# Reserve a stack for the initial thread.
+.section .bss
+.align 16
 stack_bottom:
-resb 16384
+.skip 16384 # 16 KiB
 stack_top:
 
-section .text
-global _start
+# The kernel entry point.
+.section .text
+.global _start
+.type _start, @function
 _start:
-    mov esp, stack_top
-    extern kernel_main
-    call kernel_main
+	movl $stack_top, %esp
 
+	# Call the global constructors.
+	call _init
 
-    cli
-.hang: 
-    hlt
-    jmp .hang
-.end:
+	# Transfer control to the main kernel.
+	call kernel_main
+
+	# Hang if kernel_main unexpectedly returns.
+	cli
+1:	hlt
+	jmp 1b
+.size _start, . - _start
