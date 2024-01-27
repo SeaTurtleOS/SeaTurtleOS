@@ -18,7 +18,7 @@ void terminal_init(void) {
     terminal_row = 0;
     terminal_column = 0;
     // Initialize the current row and column to be at the beginning of the terminal
-    terminal_color = vga_entry_color(VGA_LIGHT_RED, VGA_BLACK);  // Blue foreground, black background
+    terminal_color = vga_entry_color(VGA_LIGHT_CYAN, VGA_BLACK);  // Blue foreground, black background
     terminal_buffer = (uint16_t*) 0xB8000;  // Spooky magic number!?
     for (size_t y = 0; y < VGA_HEIGHT; y++) {  // Goes over every line (row)
         for (size_t x = 0;x < VGA_WIDTH; x++) { // Goes over every column

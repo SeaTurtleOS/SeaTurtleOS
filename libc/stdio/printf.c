@@ -3,78 +3,50 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <algos.h>
  
-static bool print(const char* data, size_t length) {
+static void print(const char* data, size_t length) {
 	const unsigned char* bytes = (const unsigned char*) data;
 	for (size_t i = 0; i < length; i++)
-		if (putchar(bytes[i]) == EOF)
-			return false;
-	return true;
+		putchar(bytes[i]);
 }
  
-int printf(const char* restrict format, ...) {
-	va_list parameters;
-	va_start(parameters, format);
- 
-	int written = 0;
- 
-	while (*format != '\0') {
-		size_t maxrem = INT_MAX - written;
- 
-		if (format[0] != '%' || format[1] == '%') {
-			if (format[0] == '%')
-				format++;
-			size_t amount = 1;
-			while (format[amount] && format[amount] != '%')
-				amount++;
-			if (maxrem < amount) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(format, amount))
-				return -1;
-			format += amount;
-			written += amount;
-			continue;
-		}
- 
-		const char* format_begun_at = format++;
- 
-		if (*format == 'c') {
-			format++;
-			char c = (char) va_arg(parameters, int /* char promotes to int */);
-			if (!maxrem) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(&c, sizeof(c)))
-				return -1;
-			written++;
-		} else if (*format == 's') {
-			format++;
-			const char* str = va_arg(parameters, const char*);
-			size_t len = strlen(str);
-			if (maxrem < len) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(str, len))
-				return -1;
-			written += len;
-		} else {
-			format = format_begun_at;
-			size_t len = strlen(format);
-			if (maxrem < len) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(format, len))
-				return -1;
-			written += len;
-			format += len;
-		}
-	}
- 
-	va_end(parameters);
-	return written;
+void printf(const char* text, ...) {
+    va_list ptr;
+    va_start(ptr, text);
+    int length = strlen(text);
+    bool format = false;
+    for (int i = 0; i < length; i++) {
+        // Not in format mode, not going to enter format mode:
+        if (!format && text[i] != '%') {
+            print(&text[i], 1);
+        }
+
+        // In format mode already
+        if (format) {
+            // Format in a digit
+            if (text[i] == 'd') {
+                char v[32]; // 32 is an arbitrary number (i think?)
+                int_to_string(v, va_arg(ptr, int));
+                for (int i = 0; v[i] != '\0'; i++)
+                    print(&v[i], 1); // Display a single character. There's probably a better way to do this, but I'm too lazy to figure that out.
+            } else if (text[i] == 'c') {
+                // Print the one character
+                print((char*) va_arg(ptr, int), 1);
+            } else if (text[i] == 's') {
+                char* items = va_arg(ptr, char*);
+                // Iterate over the characters in a string one by one
+                for (int i = 0; items[i] != '\0'; i++)
+                    print(&items[i], 1);
+            }
+            // Exit format mode
+            format = false;
+        }
+
+        // About to enter format mode
+        if (text[i] == '%') {
+            format = true;
+        }
+    }
+	va_end(ptr);
 }
