@@ -5,7 +5,6 @@
  
 void kernel_main(void) {
 	terminal_init();
-	uint8_t* n = &"Hello World";
-	uint8_t answer = crc32_byte(n, 32);
-	printf("%d", answer);
+	char name[] = "Turtle";
+	printf("God's most beloved angel is named... %s", name);
 }
