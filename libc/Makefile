@@ -40,6 +40,8 @@ string/memset.o \
 string/strlen.o \
 algos/crc32_byte.o \
 algos/int_to_string.o \
+stdfs/tar_free.o \
+stdfs/tar_create.o \
  
 HOSTEDOBJS=\
 $(ARCH_HOSTEDOBJS) \
