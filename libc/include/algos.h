@@ -10,6 +10,7 @@ extern "C" {
  
 uint32_t crc32_byte(uint8_t *p, uint32_t bytelength);
 void int_to_string(char str[], int num);
+uint32_t adler32(char*);
 
 #ifdef __cplusplus
 }
