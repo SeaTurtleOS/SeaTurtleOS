@@ -41,9 +41,6 @@ string/strlen.o \
 algos/crc32_byte.o \
 algos/int_to_string.o \
 algos/adler32.o \
-stdfs/tar_free.o \
-stdfs/tar_create.o \
-stdfs/tar_close.o \
  
 HOSTEDOBJS=\
 $(ARCH_HOSTEDOBJS) \
