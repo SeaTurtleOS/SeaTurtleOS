@@ -12,6 +12,9 @@ extern "C" {
 void printf(const char*, ...);
 void putchar(int);
 void puts(const char*);
+unsigned char inportb(unsigned short);
+void outportb (unsigned short _port, unsigned char _data);
+unsigned char fetch_kb(void);
 
 #ifdef __cplusplus
 }
